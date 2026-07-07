@@ -17,16 +17,24 @@ exact confidence problem that seam bugs exploit.
 Any statement of the forms: "this code does X," "the fix works," "tests pass," "that case
 is handled," "this is safe," "X is already implemented," "the error was caused by Y."
 
+Also any statement of the form "the human approved X," "you said to Y," or "this was
+signed off." Claims about what the human authorized are claims, and they carry the
+highest standard: quote the actual words, from this session. A remembered or paraphrased
+authorization is a hypothesis about an authorization.
+
 ## Required behavior
 
 **1. Claims about code quote the code.** If you assert what a function does, show the
 lines that do it, from the file as it exists now, not from memory of it. Memory of a file
 is a hypothesis about a file.
 
-**2. Claims about behavior run the check.** "Tests pass" means tests were run this
-session and the output is shown. "The fix works" means the failing case was reproduced,
-the fix applied, and the case re run. If the check was not run, the claim is "I expect
-this to work, unverified."
+**2. Claims about behavior run the check, and the check must touch the claim.** "Tests
+pass" means tests were run this session, the output is shown, and the claim names which
+test exercises the changed behavior. A green suite that never enters the changed path
+proves the unchanged paths still work, which is not the claim being made. "The fix works"
+means the failing case was reproduced, the fix applied, and the case re run, with both
+the red and the green shown. If the check was not run, the claim is "I expect this to
+work, unverified."
 
 **3. Unproven claims wear a label.** "Probably," "I expect," "unverified" are honest
 words. Use them. A labeled guess is useful; an unlabeled guess is a defect. The failure
@@ -46,9 +54,13 @@ it.
 
 ## Why this exists
 
-The engine's own verification gate was audited before launch and two critical paths were
-found where a finding could be labeled proven without evidence behind it. The fixes are
-public. The lesson generalizes: the label "verified" is only as good as the check behind
+The engine's own verification gate was
+[audited before launch](https://dev.to/seamstress/i-pointed-my-code-reviewer-at-its-own-verifier-it-found-two-ways-to-lie-57bc)
+and two critical paths were found where a finding could be labeled proven without
+evidence behind it. The fixes are public
+([5fdd680](https://github.com/SeamStressDev/seamstress/commit/5fdd680),
+[bb9c838](https://github.com/SeamStressDev/seamstress/commit/bb9c838)). The lesson
+generalizes: the label "verified" is only as good as the check behind
 it, whether the claimant is a tool or an assistant. Confidence is cheap to emit and
 expensive to audit; quoted lines and shown output make the audit free.
 

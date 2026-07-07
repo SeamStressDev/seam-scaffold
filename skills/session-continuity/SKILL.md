@@ -38,11 +38,21 @@ repo is the fact. If they disagree, say so before doing anything.
 **4. Write the continuity note:** which seam files changed and why, in one line each;
 what is verified green versus expected but unverified (the labels from the
 [verification protocol](../verification-discipline/SKILL.md) carry over); anything left
-half done, named honestly as half done; any protocol overrides and their stated reasons.
+half done, named honestly as half done; any protocol overrides and their stated reasons,
+recorded as expired history, never as standing permission. Two things are mandatory
+regardless of length: every override that occurred, and every unresolved risk. Brevity
+budgets apply to everything else.
 
 **5. Keep it short.** The note is a torch handoff, not a diary. Ten lines beats a page,
 because a page does not get read at the start of a hurried session, and an unread note
-protects no one.
+protects no one. Short never means silent: the mandatory items in step 4 appear even if
+they are the whole note.
+
+**6. Tend the map.** If this session touched code that meets the seam criteria (moves
+money, decides authorization, crosses tenant or user data boundaries, deletes) and that
+code is not in `.seamstress/seam-map.md`, add it, with a one line reason, and say so in
+the continuity note. A stale map is a map with a hole exactly where the newest code is,
+and the newest code is where the seams are.
 
 ## Override
 
@@ -55,7 +65,9 @@ seconds to skip and has no benefit. If the human insists, comply and note it.
 The pattern this targets has a name in the engine's research: session churn. Files edited
 across many separate AI assisted sessions concentrate seam bugs, because each session
 writes code that is coherent with what it read, and no session reads everything. The
-double charge in catalog 003 was two files, each fine, written apart. Continuity notes do
+double charge in
+[catalog 003](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths)
+was two files, each fine, written apart. Continuity notes do
 not make sessions share a brain; they make each session start where the last one actually
 stopped, instead of where it plausibly stopped.
 

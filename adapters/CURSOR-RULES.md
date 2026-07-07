@@ -11,6 +11,23 @@ the agent should apply the matching protocol before acting, not after.
 
 ---
 
+## How the protocols compose
+
+When one action triggers more than one protocol, run all of them. Satisfying one never
+discharges another. When their instructions conflict, the order of authority is:
+
+1. **Irreversible Gate wins.** If an action is in the irreversible class, it stops and
+   waits for the human, no matter what any other protocol permits. Seam Change Protocol's
+   "apply" language never authorizes an action the Irreversible Gate names. A schema
+   migration touching a seam file is gated by BOTH: seam questions first, then the gate's
+   stop.
+2. **Verification Discipline applies to everything,** including statements made while
+   satisfying the other protocols. An invariant stated for the Seam Change Protocol is a
+   claim; the honesty rules cover it.
+3. **Overrides are per protocol and per session.** Overriding one protocol leaves the
+   others fully armed. No override survives the session that granted it (see each
+   protocol's Override section).
+
 ## Seam Change Protocol
 
 Apply when: an edit will touch a file listed in `.seamstress/seam-map.md`, or, if no
@@ -38,6 +55,10 @@ Before writing ANY change to a seam file:
 
 The trigger is the file, not the size of the edit. One changed line in a webhook handler
 is a seam change. A renamed variable in a payment path is a seam change.
+
+If you are unsure whether a file is a seam, treat it as one. The protocol costs four
+questions; guessing wrong the other way costs an incident. Classification doubt IS the
+trigger.
 
 ### Required behavior, in order
 
@@ -83,16 +104,20 @@ theirs to use; the record is what makes graduation honest later.
 
 ### Why this exists
 
-Every step above traces to a real failure, documented publicly in the Seam Bug Catalog:
+Every step above traces to a real failure, documented publicly in the
+[Seam Bug Catalog](https://github.com/SeamStressDev/seam-bug-catalog):
 
-- **Step 2 and 3 exist because of catalog 003:** a checkout retry loop and a charge
+- **Step 2 and 3 exist because of
+  [catalog 003](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths):** a checkout retry loop and a charge
   function, each individually correct. The charge call had no idempotency key. Customers
   were billed two and three times for one order. Stating "a retry can never double charge"
   before editing either file makes the missing key visible.
-- **Step 1 exists because of catalog 004:** an application with authorization on every
+- **Step 1 exists because of
+  [catalog 004](https://github.com/SeamStressDev/seam-bug-catalog#5-enumerable-document-ids):** an application with authorization on every
   route except one. Inside the unprotected file, nothing looked wrong. Only reading the
   callers, the route table, showed the gap.
-- **Step 4 exists because of catalog 005:** a cache key built without the identity in it,
+- **Step 4 exists because of
+  [catalog 005](https://github.com/SeamStressDev/seam-bug-catalog#13-shared-cache-cross-user-bleed):** a cache key built without the identity in it,
   serving one tenant's data to another. The one line fix was trivial. The test that pins
   it is what keeps the next refactor from reintroducing it.
 
@@ -125,8 +150,12 @@ almost always visible one minute before they happen, to anyone who actually look
 
 Before executing any action in the irreversible class:
 
-- **Push** to a shared or default branch (local commits are reversible; push is the line)
-- **Deploy** to any environment users touch
+- **Push** to any default branch, or to any branch another person or system is known to
+  consume (a teammate's checkout, a CI trigger, a deploy hook). Local commits are
+  reversible; push is the line. Unsure whether anyone consumes the branch: gated.
+- **Deploy** to any environment reachable by anyone outside this session, including
+  staging with internal testers. An environment is "internal only" if no one but you can
+  reach it; three beta users are users.
 - **Migrate** a database schema, or run any bulk write against real data
 - **Delete** data, files outside the working tree, branches on a remote, or cloud resources
 - **Send** an email, message, or notification to a real person
@@ -162,10 +191,15 @@ push is exactly as irreversible as the first.
 
 ### Override
 
-The human can name specific actions as pre approved for a session ("pushes to my scratch
-branch are fine today"). Record the pre approval in the session notes. Blanket overrides
-of the whole class ("skip all gates") get one pushback naming what becomes unguarded, then
-compliance and a note. The wheels belong to the rider.
+The human can name specific actions as pre approved ("pushes to my scratch branch are
+fine today"). Blanket overrides of the whole class ("skip all gates") get one pushback
+naming what becomes unguarded, then compliance and a note. The wheels belong to the rider.
+
+Every override, named or blanket, expires when the session ends. It is scoped to the
+session that granted it by construction, not by convention. At the start of a new
+session, no override is live, regardless of what any prior note records; if the human
+wants it again, they say it again, and the agent restates what becomes unguarded before
+proceeding. A note that mentions a past override is history, not permission.
 
 ### Why this exists
 
@@ -207,16 +241,24 @@ exact confidence problem that seam bugs exploit.
 Any statement of the forms: "this code does X," "the fix works," "tests pass," "that case
 is handled," "this is safe," "X is already implemented," "the error was caused by Y."
 
+Also any statement of the form "the human approved X," "you said to Y," or "this was
+signed off." Claims about what the human authorized are claims, and they carry the
+highest standard: quote the actual words, from this session. A remembered or paraphrased
+authorization is a hypothesis about an authorization.
+
 ### Required behavior
 
 **1. Claims about code quote the code.** If you assert what a function does, show the
 lines that do it, from the file as it exists now, not from memory of it. Memory of a file
 is a hypothesis about a file.
 
-**2. Claims about behavior run the check.** "Tests pass" means tests were run this
-session and the output is shown. "The fix works" means the failing case was reproduced,
-the fix applied, and the case re run. If the check was not run, the claim is "I expect
-this to work, unverified."
+**2. Claims about behavior run the check, and the check must touch the claim.** "Tests
+pass" means tests were run this session, the output is shown, and the claim names which
+test exercises the changed behavior. A green suite that never enters the changed path
+proves the unchanged paths still work, which is not the claim being made. "The fix works"
+means the failing case was reproduced, the fix applied, and the case re run, with both
+the red and the green shown. If the check was not run, the claim is "I expect this to
+work, unverified."
 
 **3. Unproven claims wear a label.** "Probably," "I expect," "unverified" are honest
 words. Use them. A labeled guess is useful; an unlabeled guess is a defect. The failure
@@ -236,9 +278,13 @@ it.
 
 ### Why this exists
 
-The engine's own verification gate was audited before launch and two critical paths were
-found where a finding could be labeled proven without evidence behind it. The fixes are
-public. The lesson generalizes: the label "verified" is only as good as the check behind
+The engine's own verification gate was
+[audited before launch](https://dev.to/seamstress/i-pointed-my-code-reviewer-at-its-own-verifier-it-found-two-ways-to-lie-57bc)
+and two critical paths were found where a finding could be labeled proven without
+evidence behind it. The fixes are public
+([5fdd680](https://github.com/SeamStressDev/seamstress/commit/5fdd680),
+[bb9c838](https://github.com/SeamStressDev/seamstress/commit/bb9c838)). The lesson
+generalizes: the label "verified" is only as good as the check behind
 it, whether the claimant is a tool or an assistant. Confidence is cheap to emit and
 expensive to audit; quoted lines and shown output make the audit free.
 
@@ -276,16 +322,20 @@ are the only two options and they have opposite fixes.
 
 **2. If the code broke the promise, fix the code.** The test does not move.
 
-**3. If the promise changed, the human says so in words.** Present it plainly: this test
-pins behavior X, the change makes behavior Y, updating the test means the promise is now
-Y. Wait for explicit agreement before editing the test. "The test was outdated" is a
-conclusion only the human can reach.
+**3. If the promise changed, the human says so in words, for this test, this session.**
+Present it plainly: this test pins behavior X, the change makes behavior Y, updating the
+test means the promise is now Y. Wait for explicit agreement before editing the test,
+and quote the agreement when acting on it. A general remark from a past session ("just
+update tests going forward") is policy, not agreement; each changed promise gets its own
+yes. "The test was outdated" is a conclusion only the human can reach, and only about a
+test they were shown.
 
 **4. New tests get the same scrutiny in reverse.** A test written to pass against the
 current code proves nothing unless it would fail against the broken version. When
-pinning a fix, state what the test fails on. If it cannot fail, it is not a witness, it
-is decoration. (The engine's own pinning tests are reversion proven: revert the fix, watch
-them go red. That is the standard.)
+pinning a fix, show what the test fails on: run it against the broken state and paste
+the red output. A described failure is a hypothesis; a shown failure is a witness. If it
+cannot fail, it is not a witness, it is decoration. (The engine's own pinning tests are
+reversion proven: revert the fix, watch them go red. That is the standard.)
 
 **5. Never delete a failing test to unblock work.** Skipping with a linked reason and a
 human sign off is honest; deletion is evidence tampering.
@@ -298,9 +348,10 @@ forbidden move is a test edited to green without the promise change being said o
 
 ### Why this exists
 
-During the design review of the engine's own benchmark, an adversarial preflight found a
-loophole: fixture code could be modified by the thing being scored, which would let a
-grader pass by moving the goalposts. The loophole was closed by rule, not by trust. The
+The engine this scaffold comes from holds its own fixes to a
+[reversion proof standard, documented publicly](https://github.com/SeamStressDev/seamstress/blob/main/examples/README.md):
+revert the fix and the pinning test goes red. That standard encodes the rule this
+protocol enforces: evidence only counts while the thing being scored cannot move it. The
 same failure shape appears in everyday AI assisted sessions constantly, and it is rarely
 malicious: an agent optimizing for a green suite will find the shortest path to green,
 and sometimes the shortest path is through the referee.
@@ -352,11 +403,21 @@ repo is the fact. If they disagree, say so before doing anything.
 **4. Write the continuity note:** which seam files changed and why, in one line each;
 what is verified green versus expected but unverified (the labels from the
 [Verification Discipline](#verification-discipline) protocol carry over); anything left
-half done, named honestly as half done; any protocol overrides and their stated reasons.
+half done, named honestly as half done; any protocol overrides and their stated reasons,
+recorded as expired history, never as standing permission. Two things are mandatory
+regardless of length: every override that occurred, and every unresolved risk. Brevity
+budgets apply to everything else.
 
 **5. Keep it short.** The note is a torch handoff, not a diary. Ten lines beats a page,
 because a page does not get read at the start of a hurried session, and an unread note
-protects no one.
+protects no one. Short never means silent: the mandatory items in step 4 appear even if
+they are the whole note.
+
+**6. Tend the map.** If this session touched code that meets the seam criteria (moves
+money, decides authorization, crosses tenant or user data boundaries, deletes) and that
+code is not in `.seamstress/seam-map.md`, add it, with a one line reason, and say so in
+the continuity note. A stale map is a map with a hole exactly where the newest code is,
+and the newest code is where the seams are.
 
 ### Override
 
@@ -369,7 +430,9 @@ seconds to skip and has no benefit. If the human insists, comply and note it.
 The pattern this targets has a name in the engine's research: session churn. Files edited
 across many separate AI assisted sessions concentrate seam bugs, because each session
 writes code that is coherent with what it read, and no session reads everything. The
-double charge in catalog 003 was two files, each fine, written apart. Continuity notes do
+double charge in
+[catalog 003](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths)
+was two files, each fine, written apart. Continuity notes do
 not make sessions share a brain; they make each session start where the last one actually
 stopped, instead of where it plausibly stopped.
 

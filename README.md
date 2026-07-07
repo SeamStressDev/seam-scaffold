@@ -36,6 +36,9 @@ other tools in [`adapters/`](adapters/).
   reading the seam map and the last session's note, and ends by leaving the note it
   would want to find.
 
+When protocols overlap, they compose by a fixed rule: run all, Irreversible Gate wins.
+See [skills/README.md](skills/README.md).
+
 ## What this is not
 
 Not a scanner, not a linter, not a guarantee. The protocols force the questions a

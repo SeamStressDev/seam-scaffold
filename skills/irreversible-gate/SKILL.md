@@ -19,8 +19,12 @@ almost always visible one minute before they happen, to anyone who actually look
 
 Before executing any action in the irreversible class:
 
-- **Push** to a shared or default branch (local commits are reversible; push is the line)
-- **Deploy** to any environment users touch
+- **Push** to any default branch, or to any branch another person or system is known to
+  consume (a teammate's checkout, a CI trigger, a deploy hook). Local commits are
+  reversible; push is the line. Unsure whether anyone consumes the branch: gated.
+- **Deploy** to any environment reachable by anyone outside this session, including
+  staging with internal testers. An environment is "internal only" if no one but you can
+  reach it; three beta users are users.
 - **Migrate** a database schema, or run any bulk write against real data
 - **Delete** data, files outside the working tree, branches on a remote, or cloud resources
 - **Send** an email, message, or notification to a real person
@@ -56,10 +60,15 @@ push is exactly as irreversible as the first.
 
 ## Override
 
-The human can name specific actions as pre approved for a session ("pushes to my scratch
-branch are fine today"). Record the pre approval in the session notes. Blanket overrides
-of the whole class ("skip all gates") get one pushback naming what becomes unguarded, then
-compliance and a note. The wheels belong to the rider.
+The human can name specific actions as pre approved ("pushes to my scratch branch are
+fine today"). Blanket overrides of the whole class ("skip all gates") get one pushback
+naming what becomes unguarded, then compliance and a note. The wheels belong to the rider.
+
+Every override, named or blanket, expires when the session ends. It is scoped to the
+session that granted it by construction, not by convention. At the start of a new
+session, no override is live, regardless of what any prior note records; if the human
+wants it again, they say it again, and the agent restates what becomes unguarded before
+proceeding. A note that mentions a past override is history, not permission.
 
 ## Why this exists
 

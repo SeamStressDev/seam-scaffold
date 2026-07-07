@@ -26,6 +26,10 @@ Before writing ANY change to a seam file:
 The trigger is the file, not the size of the edit. One changed line in a webhook handler
 is a seam change. A renamed variable in a payment path is a seam change.
 
+If you are unsure whether a file is a seam, treat it as one. The protocol costs four
+questions; guessing wrong the other way costs an incident. Classification doubt IS the
+trigger.
+
 ## Required behavior, in order
 
 **1. Read before you write.** Read the whole target file, not the region around the edit.
@@ -70,16 +74,20 @@ theirs to use; the record is what makes graduation honest later.
 
 ## Why this exists
 
-Every step above traces to a real failure, documented publicly in the Seam Bug Catalog:
+Every step above traces to a real failure, documented publicly in the
+[Seam Bug Catalog](https://github.com/SeamStressDev/seam-bug-catalog):
 
-- **Step 2 and 3 exist because of catalog 003:** a checkout retry loop and a charge
+- **Step 2 and 3 exist because of
+  [catalog 003](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths):** a checkout retry loop and a charge
   function, each individually correct. The charge call had no idempotency key. Customers
   were billed two and three times for one order. Stating "a retry can never double charge"
   before editing either file makes the missing key visible.
-- **Step 1 exists because of catalog 004:** an application with authorization on every
+- **Step 1 exists because of
+  [catalog 004](https://github.com/SeamStressDev/seam-bug-catalog#5-enumerable-document-ids):** an application with authorization on every
   route except one. Inside the unprotected file, nothing looked wrong. Only reading the
   callers, the route table, showed the gap.
-- **Step 4 exists because of catalog 005:** a cache key built without the identity in it,
+- **Step 4 exists because of
+  [catalog 005](https://github.com/SeamStressDev/seam-bug-catalog#13-shared-cache-cross-user-bleed):** a cache key built without the identity in it,
   serving one tenant's data to another. The one line fix was trivial. The test that pins
   it is what keeps the next refactor from reintroducing it.
 
