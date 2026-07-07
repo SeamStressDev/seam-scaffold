@@ -127,3 +127,35 @@ recall floor and the third eliminated the safety net's rescue class. The
 scaffold copy was re-ported with parity fixtures regenerated, and score band
 tiering in the rendered map was adjudicated approved as the flood's rendering
 side fix; see the map accuracy document's addendum.
+
+**Untrusted repo content reaches the agent-trusted seam map (injection
+boundary, 2026-07-07).** A blind cross-model trio audited the seam map CLI's
+untrusted-input surface ([validation/audit/](audit/)): a repository under audit
+controls the file paths, file contents, and any planted `.seamstress/seam-map.md`
+that flow into the map an agent is later told to read first as trusted
+orientation. Nine findings verified against the real code, two Critical, found
+cold (the core filename injection surfaced under the no-framing critic). The
+class: a document the session-continuity protocol treats as trusted can
+currently be authored by the repository being audited, through two independent
+channels (a crafted filename that renders as markdown structure, and a planted
+map carried forward verbatim). Four findings implicate the shared heuristic and
+are engine first (F1 enabling path sanitization, F5 uncaught readdirSync, F6
+symlink escape, F9 cap count); the rest are scaffold local. The engine's own
+report renderer consumes the same unsanitized `candidate.path` and must be
+checked in the engine-fix session.
+
+**Ruling (2026-07-07):** recorded, not fixed, this session; fixes are the next
+session, engine first where the shared heuristic is implicated. F6 severity
+raised to Medium-High: given the audit-a-strangers-repo use case, the symlink
+escape is a hostile-repo exfiltration surface, not just a scoping quirk. Wider
+distribution of the CLI (Show HN, newsletters, install pushes) is gated on
+F1, F2, F3, F5, F6, and F7 landing.
+
+**Resolution: PENDING.** Fix sequencing: (1) engine first, the shared heuristic
+findings, path sanitization for F1 plus F5 and F6 and F9, with the engine
+report renderer checked for the same `candidate.path` exposure, recall floor and
+benchmark gate held, then re-port to the scaffold and regenerate parity
+fixtures; (2) scaffold, the render-side and CLI findings, F1 marker anchoring
+and escaping, F2 and F3 planted-map provenance, F4 truncation, F7 gitignore line
+semantics, F8; (3) lift the distribution gate only after F1, F2, F3, F5, F6, F7
+land with tests. No fix ships before its adjudication.
