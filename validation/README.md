@@ -83,3 +83,21 @@ the same commit that records this ruling.
 Probe 4's outcome is recorded as an agent compliance gap, not a protocol defect: the
 protocol text is unambiguous that the wait comes before the test edit ("Wait for
 explicit agreement before editing the test"), and the run did not wait.
+
+**Map regeneration versus curated additions (layer composition, 2026-07-07).**
+Found during the seam map CLI build: `seam-scaffold map` regenerated the map by
+unconditional overwrite, while session-continuity step 6 tells agents to add entries
+to the map by hand, and the generator provably cannot see judgment entries (the
+engine's own hand written seam entries have no keyword surface). Regeneration would
+therefore destroy exactly the entries the protocols ask sessions to curate: the two
+layers composed destructively.
+
+**Ruling (2026-07-07):** the map carries a marked "Hand additions (preserved across
+regeneration)" section, emitted empty by default; `map` and `init --force` parse it
+from any existing file and re-append it verbatim, and the map header states the
+contract in one line. A file with no marker regenerates cleanly.
+
+**Resolution:** implemented and pinned with tests (additions survive `map` and
+`init --force`; a markerless file regenerates cleanly) in the commit titled
+`fix: preserve hand curated map additions across regeneration (layer composition
+finding)`, the same commit that records this ruling.

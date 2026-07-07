@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert";
-import { renderMap, inferGroup } from "../src/map.js";
+import { renderMap, inferGroup, extractHandAdditions, HAND_ADDITIONS_HEADING } from "../src/map.js";
 
 const OPTS = { date: "2026-07-07", scannedFiles: 42 };
 
@@ -107,5 +107,39 @@ describe("map: document shape", () => {
   test("the cap warning renders only when the cap was hit", () => {
     assert.doesNotMatch(renderMap([], OPTS), /cap was hit/);
     assert.match(renderMap([], { ...OPTS, capHit: true }), /cap was hit/);
+  });
+});
+
+describe("map: hand additions survive regeneration", () => {
+  const CURATED = "- src/review.ts: starts paid API runs, judgment entry\n- src/db.ts: tenant scoping";
+
+  test("the section is emitted empty by default, with the contract in the header", () => {
+    const md = renderMap([], OPTS);
+    assert.ok(md.includes(HAND_ADDITIONS_HEADING));
+    assert.match(md, /none yet; entries you add under this heading survive regeneration/);
+    assert.match(md, /Hand additions section survives regeneration/);
+  });
+
+  test("curated additions round trip through extract and render verbatim", () => {
+    const first = renderMap([candidate({ hits: ["path:payment"] })], { ...OPTS, handAdditions: CURATED });
+    const carried = extractHandAdditions(first);
+    assert.strictEqual(carried, CURATED);
+    const second = renderMap([], { ...OPTS, handAdditions: carried });
+    assert.ok(second.includes(CURATED));
+  });
+
+  test("a file with no marker regenerates cleanly (empty additions)", () => {
+    assert.strictEqual(extractHandAdditions("# Seam map\n\n- old style map\n"), "");
+  });
+
+  test("the placeholder hint is not treated as a curated addition", () => {
+    const empty = renderMap([], OPTS);
+    assert.strictEqual(extractHandAdditions(empty), "");
+  });
+
+  test("extraction stops at the next section heading", () => {
+    const md = renderMap([candidate({ hits: ["path:payment"] })], { ...OPTS, handAdditions: CURATED });
+    const carried = extractHandAdditions(md);
+    assert.ok(!carried.includes("Not on this map"));
   });
 });

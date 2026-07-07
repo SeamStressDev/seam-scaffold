@@ -115,10 +115,34 @@ function rescueLine(candidate) {
   return `- ${candidate.path}: ${lead}, rescued by risk shape: ${shapes} (${tags})`;
 }
 
+/** The marker heading for the hand curated section preserved across regeneration. */
+export const HAND_ADDITIONS_HEADING = "## Hand additions (preserved across regeneration)";
+
+/** Placeholder shown when the hand additions section is empty. */
+const HAND_ADDITIONS_HINT =
+  "(none yet; entries you add under this heading survive regeneration verbatim)";
+
+/**
+ * Extract the hand additions section content from an existing map, so a
+ * regeneration can carry it forward verbatim. Returns the section body
+ * (without the heading) or an empty string when the marker is absent or the
+ * section holds only the placeholder hint.
+ * @param {string} markdown
+ * @returns {string}
+ */
+export function extractHandAdditions(markdown) {
+  const start = markdown.indexOf(HAND_ADDITIONS_HEADING);
+  if (start === -1) return "";
+  const afterHeading = start + HAND_ADDITIONS_HEADING.length;
+  const nextSection = markdown.indexOf("\n## ", afterHeading);
+  const body = markdown.slice(afterHeading, nextSection === -1 ? undefined : nextSection).trim();
+  return body === HAND_ADDITIONS_HINT ? "" : body;
+}
+
 /**
  * Render the seam map markdown.
  * @param {import("./heuristic/heuristic.js").Candidate[]} candidates
- * @param {{ date: string, scannedFiles: number, capHit?: boolean, regenerateCommand?: string }} options
+ * @param {{ date: string, scannedFiles: number, capHit?: boolean, regenerateCommand?: string, handAdditions?: string }} options
  * @returns {string}
  */
 export function renderMap(candidates, options) {
@@ -130,11 +154,20 @@ export function renderMap(candidates, options) {
     "SeamStressDev/seamstress@daf0297). This map is advisory, never authoritative:",
     "it marks where the heuristic sees seam signals. It cannot see design intent,",
     "and a file it missed can still be a seam. Groupings are heuristic signal",
-    "families, not judgment.",
+    "families, not judgment. The Hand additions section survives regeneration",
+    "verbatim; curate it freely.",
     `Regenerate with: ${regen}`,
     "",
     `Scanned ${options.scannedFiles} source files.` +
       (options.capHit ? " The scan file cap was hit; this map may be incomplete." : ""),
+    "",
+  ];
+
+  const handAdditions = (options.handAdditions ?? "").trim();
+  const handSection = [
+    HAND_ADDITIONS_HEADING,
+    "",
+    handAdditions === "" ? HAND_ADDITIONS_HINT : handAdditions,
     "",
   ];
 
@@ -143,9 +176,10 @@ export function renderMap(candidates, options) {
       "No files met the seam criteria. This means the heuristic found none, not",
       "that none exist: a seam hidden in a generically named file with no signals",
       "can slip a pattern filter. If you know where your money, auth, tenant, or",
-      "deletion boundaries are, add them here by hand.",
+      "deletion boundaries are, add them under Hand additions below.",
       "",
     );
+    lines.push(...handSection);
     return lines.join("\n");
   }
 
@@ -168,14 +202,16 @@ export function renderMap(candidates, options) {
     lines.push("");
   }
 
+  lines.push(...handSection);
+
   lines.push(
     "## Not on this map",
     "",
     "Files below the signal threshold are not listed. That means the heuristic",
     "found no signals, not that no seams exist. UI surfaces are penalized by",
     "design, and a seam in a generically named file with no signals can slip a",
-    "pattern filter. Add known seams by hand; the map is yours, the generator",
-    "only drafts it.",
+    "pattern filter. Add known seams under Hand additions above; the map is",
+    "yours, the generator only drafts it.",
     "",
   );
 

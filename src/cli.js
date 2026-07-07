@@ -6,7 +6,7 @@ import { parseArgs } from "node:util";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { scanRepo, sourceFileStats } from "./heuristic/heuristic.js";
-import { renderMap } from "./map.js";
+import { renderMap, extractHandAdditions } from "./map.js";
 
 const USAGE = `Usage: seam-scaffold <init|map> [path] [--force]
 
@@ -23,10 +23,15 @@ function generate(repoPath) {
   const candidates = scanRepo(repoPath);
   const stats = sourceFileStats(repoPath);
   const date = new Date().toISOString().slice(0, 10);
+  const mapPath = join(repoPath, ".seamstress", "seam-map.md");
+  const handAdditions = existsSync(mapPath)
+    ? extractHandAdditions(readFileSync(mapPath, "utf8"))
+    : "";
   const markdown = renderMap(candidates, {
     date,
     scannedFiles: stats.total,
     capHit: stats.total > 5000,
+    handAdditions,
   });
   return { candidates, stats, markdown };
 }

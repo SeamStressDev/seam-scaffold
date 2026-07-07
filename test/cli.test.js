@@ -78,6 +78,42 @@ describe("cli: map", () => {
     assert.match(r.stdout, /wrote/);
   });
 
+  test("hand additions survive a regeneration", () => {
+    run(["init", dir]);
+    const mapPath = join(dir, ".seamstress", "seam-map.md");
+    const curated = "- src/hidden-seam.js: judgment entry the heuristic cannot see";
+    const md = readFileSync(mapPath, "utf8").replace(
+      /\(none yet; entries you add under this heading survive regeneration verbatim\)/,
+      curated,
+    );
+    writeFileSync(mapPath, md);
+    run(["map", dir]);
+    const regenerated = readFileSync(mapPath, "utf8");
+    assert.ok(regenerated.includes(curated), "curated line lost in regeneration");
+  });
+
+  test("hand additions survive init --force", () => {
+    run(["init", dir]);
+    const mapPath = join(dir, ".seamstress", "seam-map.md");
+    const curated = "- src/hidden-seam.js: judgment entry";
+    writeFileSync(
+      mapPath,
+      readFileSync(mapPath, "utf8").replace(/\(none yet;[^)]+\)/, curated),
+    );
+    run(["init", dir, "--force"]);
+    assert.ok(readFileSync(mapPath, "utf8").includes(curated));
+  });
+
+  test("a legacy map with no marker regenerates cleanly", () => {
+    const mapDir = join(dir, ".seamstress");
+    mkdirSync(mapDir, { recursive: true });
+    writeFileSync(join(mapDir, "seam-map.md"), "# Seam map\n\n- old entry: hand written\n");
+    const r = run(["map", dir]);
+    assert.strictEqual(r.code, 0);
+    const md = readFileSync(join(mapDir, "seam-map.md"), "utf8");
+    assert.match(md, /## Hand additions/);
+  });
+
   test("an empty repo gets the honest empty map", () => {
     const empty = mkdtempSync(join(tmpdir(), "seam-scaffold-empty-"));
     try {
