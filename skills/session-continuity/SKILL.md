@@ -66,7 +66,7 @@ The pattern this targets has a name in the engine's research: session churn. Fil
 across many separate AI assisted sessions concentrate seam bugs, because each session
 writes code that is coherent with what it read, and no session reads everything. The
 double charge in
-[catalog 003](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths)
+[catalog case 3](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths)
 was two files, each fine, written apart. Continuity notes do
 not make sessions share a brain; they make each session start where the last one actually
 stopped, instead of where it plausibly stopped.

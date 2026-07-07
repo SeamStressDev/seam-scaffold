@@ -78,16 +78,16 @@ Every step above traces to a real failure, documented publicly in the
 [Seam Bug Catalog](https://github.com/SeamStressDev/seam-bug-catalog):
 
 - **Step 2 and 3 exist because of
-  [catalog 003](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths):** a checkout retry loop and a charge
+  [catalog case 3](https://github.com/SeamStressDev/seam-bug-catalog#3-idempotency-key-covers-only-one-of-two-charge-paths):** a checkout retry loop and a charge
   function, each individually correct. The charge call had no idempotency key. Customers
   were billed two and three times for one order. Stating "a retry can never double charge"
   before editing either file makes the missing key visible.
 - **Step 1 exists because of
-  [catalog 004](https://github.com/SeamStressDev/seam-bug-catalog#5-enumerable-document-ids):** an application with authorization on every
+  [catalog case 5](https://github.com/SeamStressDev/seam-bug-catalog#5-enumerable-document-ids):** an application with authorization on every
   route except one. Inside the unprotected file, nothing looked wrong. Only reading the
   callers, the route table, showed the gap.
 - **Step 4 exists because of
-  [catalog 005](https://github.com/SeamStressDev/seam-bug-catalog#13-shared-cache-cross-user-bleed):** a cache key built without the identity in it,
+  [catalog case 13](https://github.com/SeamStressDev/seam-bug-catalog#13-shared-cache-cross-user-bleed):** a cache key built without the identity in it,
   serving one tenant's data to another. The one line fix was trivial. The test that pins
   it is what keeps the next refactor from reintroducing it.
 
