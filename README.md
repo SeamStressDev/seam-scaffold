@@ -1,0 +1,94 @@
+# SeamStress Scaffold
+
+Training wheels for AI assisted coding.
+
+The mission: make the seam discipline free and installable, so that anyone shipping AI
+assisted code gets the judgment habits before they get the incident.
+
+A seam is a boundary where money, authorization, tenant isolation, or deletion cross
+between parts of a codebase. Seam bugs are coherence failures: each piece looks correct,
+the combination is not. They do not crash. They double charge, they skip one auth check,
+they serve one tenant's data to another, and they render as success. AI assisted
+development manufactures the exact condition they need: many fast sessions, each locally
+correct, none holding the whole. The class is documented, with real public incidents, in
+the [Seam Bug Catalog](https://github.com/SeamStressDev/seam-bug-catalog).
+
+This repository installs five behavior protocols into a coding agent. Routine code gets
+no friction. Seam code gets questions.
+
+## The five protocols
+
+Each protocol is a Claude Code skill in [`skills/`](skills/), with translations for
+other tools in [`adapters/`](adapters/).
+
+- [Seam Change Protocol](skills/seam-change-protocol/SKILL.md): before touching seam
+  code, read the neighbors, state the invariant in words, state the specific way this
+  edit could break it, and bring the pinning test with the change.
+- [Irreversible Gate](skills/irreversible-gate/SKILL.md): actions that cannot be cheaply
+  undone stop and wait for the human, every time, with the blast radius and the undo
+  named first.
+- [Verification Discipline](skills/verification-discipline/SKILL.md): claims about code
+  quote the code, claims about behavior show the run, and unproven claims wear a label.
+- [Fixture Immutability](skills/fixture-immutability/SKILL.md): tests are evidence, and
+  a red test is never edited to green unless the human says in words that the promise
+  changed.
+- [Session Continuity](skills/session-continuity/SKILL.md): every session starts by
+  reading the seam map and the last session's note, and ends by leaving the note it
+  would want to find.
+
+## What this is not
+
+Not a scanner, not a linter, not a guarantee. The protocols force the questions a
+careful reviewer would ask at a dangerous boundary; they cannot supply the judgment that
+answers them. Judgment cannot be automated, and this project says so instead of
+pretending otherwise. Every protocol ends with a section called What this protocol
+cannot do. Those sections are load bearing; read them.
+
+## What ships in v1
+
+Stated openly: this release is the seam map (Layer 1, coming) and the protocols
+(Layer 2, in this repository now). Mechanical gates and graduation are roadmapped, not
+shipped.
+
+## Install
+
+One step: copy the skills into the project where your agent works.
+
+```bash
+mkdir -p /path/to/your/repo/.claude/skills
+cp -r skills/* /path/to/your/repo/.claude/skills/
+```
+
+Claude Code discovers each protocol from `.claude/skills/<name>/SKILL.md` and loads it
+when its trigger matches. To install for every project on your machine, copy into
+`~/.claude/skills/` instead.
+
+Using Cursor: see [adapters/CURSOR-RULES.md](adapters/CURSOR-RULES.md). Using another
+agent that reads a root AGENTS.md: see [adapters/AGENTS.md](adapters/AGENTS.md).
+
+## Honest limits
+
+These protocols are text an agent reads, not code that runs. An agent can follow them
+faithfully, follow them mechanically, or drift from them late in a long session, and a
+markdown file cannot prevent the last two. They have not yet been validated against
+live sessions the way the engine is validated against its public benchmark; that
+testing is the next milestone, and until it lands the honest claim is that these encode
+lessons from documented failures, not that they measurably prevent recurrence. The
+judgment they demand stays yours: a protocol can make an agent ask whether a tradeoff
+was deliberate, but only you know the answer.
+
+## Related
+
+- [SeamStress engine](https://github.com/SeamStressDev/seamstress): the analysis tool
+  this discipline comes from. It reads a repo's seams and reports only what it can
+  prove, quoting the exact lines.
+- [Seam Bug Catalog](https://github.com/SeamStressDev/seam-bug-catalog): the documented
+  incidents that the protocols' required steps trace to.
+- [Why seams](docs/why-seams.md): the short version of what a seam is and why AI
+  assisted code concentrates bugs there.
+- [The verification gate self audit](https://dev.to/seamstress/i-pointed-my-code-reviewer-at-its-own-verifier-it-found-two-ways-to-lie-57bc):
+  the write up of the engine auditing its own proof discipline before launch.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
