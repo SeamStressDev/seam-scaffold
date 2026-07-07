@@ -110,6 +110,56 @@ describe("map: document shape", () => {
   });
 });
 
+describe("map: score band tiering", () => {
+  const strong = candidate({ path: "src/pay.js", score: 8, hits: ["path:payment", "api:payment"] });
+  const low = candidate({ path: "src/note.js", score: 4, hits: ["path:auth"] });
+  const lowRescue = candidate({
+    path: "lib/ledger.js",
+    score: 4,
+    viaSafetyNet: true,
+    hits: ["shape:db-write", "shape:money-math"],
+  });
+
+  test("6+ renders prominently, outside the collapsed block", () => {
+    const md = renderMap([strong, low], OPTS);
+    const detailsStart = md.indexOf("<details>");
+    assert.ok(md.indexOf("src/pay.js") < detailsStart, "strong candidate rendered before the collapsed block");
+    assert.ok(md.indexOf("src/note.js") > detailsStart, "low candidate rendered inside the collapsed block");
+  });
+
+  test("the low band heading carries the count without expanding", () => {
+    const md = renderMap([strong, low], OPTS);
+    assert.match(md, /<summary>Low signal band: 1 file at scores 3 to 5/);
+  });
+
+  test("a rescued file renders in the prominent tier regardless of score", () => {
+    const md = renderMap([strong, lowRescue, low], OPTS);
+    const detailsStart = md.indexOf("<details>");
+    assert.ok(md.indexOf("lib/ledger.js") < detailsStart, "rescue rendered before the collapsed block");
+    assert.match(md, /## Rescued by risk shape/);
+  });
+
+  test("an all low band map says so plainly instead of an empty prominent section", () => {
+    const md = renderMap([low, candidate({ path: "src/other.js", score: 3, hits: ["path:delete"] })], OPTS);
+    assert.match(md, /No candidates reached the strong signal band \(score 6 and up\)\./);
+    assert.match(md, /All 2 scored candidates sit in the low band below\./);
+    assert.doesNotMatch(md.slice(0, md.indexOf("<details>")), /## (Money path|Authorization|Deletion|Mixed) signals/);
+  });
+
+  test("hand additions and Not on this map render outside the collapsed block", () => {
+    const md = renderMap([strong, low], { ...OPTS, handAdditions: "- src/curated.js: judgment entry" });
+    const detailsEnd = md.indexOf("</details>");
+    assert.ok(md.indexOf(HAND_ADDITIONS_HEADING) > detailsEnd);
+    assert.ok(md.indexOf("## Not on this map") > detailsEnd);
+    assert.ok(md.includes("- src/curated.js: judgment entry"));
+  });
+
+  test("no collapsed block renders when every candidate is strong", () => {
+    const md = renderMap([strong], OPTS);
+    assert.ok(!md.includes("<details>"));
+  });
+});
+
 describe("map: hand additions survive regeneration", () => {
   const CURATED = "- src/review.ts: starts paid API runs, judgment entry\n- src/db.ts: tenant scoping";
 

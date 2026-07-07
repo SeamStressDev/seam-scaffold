@@ -63,6 +63,9 @@ const GROUP_TITLES = {
   mixed: "Mixed signals",
 };
 
+/** Minimum score for the prominently rendered strong signal band. */
+export const STRONG_BAND_MIN = 6;
+
 /**
  * Dominant signal family for a candidate, from its fired signals.
  * @param {import("./heuristic/heuristic.js").Candidate} candidate
@@ -186,20 +189,47 @@ export function renderMap(candidates, options) {
   const rescued = candidates.filter((c) => c.viaSafetyNet);
   const normal = candidates.filter((c) => !c.viaSafetyNet);
 
-  const groups = { money: [], auth: [], deletion: [], mixed: [] };
-  for (const c of normal) groups[inferGroup(c)].push(c);
+  // Score band tiering: strong signals render prominently, the low band is
+  // collapsed with its count visible without expanding. Rescued files render
+  // in the prominent tier regardless of score.
+  const strong = normal.filter((c) => c.score >= STRONG_BAND_MIN);
+  const low = normal.filter((c) => c.score < STRONG_BAND_MIN);
 
-  for (const key of ["money", "auth", "deletion", "mixed"]) {
-    if (groups[key].length === 0) continue;
-    lines.push(`## ${GROUP_TITLES[key]}`, "");
-    for (const c of groups[key]) lines.push(reasonLine(c));
-    lines.push("");
+  const renderGroups = (list, headingPrefix) => {
+    const groups = { money: [], auth: [], deletion: [], mixed: [] };
+    for (const c of list) groups[inferGroup(c)].push(c);
+    for (const key of ["money", "auth", "deletion", "mixed"]) {
+      if (groups[key].length === 0) continue;
+      lines.push(`${headingPrefix} ${GROUP_TITLES[key]}`, "");
+      for (const c of groups[key]) lines.push(reasonLine(c));
+      lines.push("");
+    }
+  };
+
+  if (strong.length > 0) {
+    renderGroups(strong, "##");
+  } else if (low.length > 0) {
+    lines.push(
+      `No candidates reached the strong signal band (score ${STRONG_BAND_MIN} and up).`,
+      `All ${low.length} scored candidates sit in the low band below.`,
+      "",
+    );
   }
 
   if (rescued.length > 0) {
     lines.push("## Rescued by risk shape (signal light, structurally risky)", "");
     for (const c of rescued) lines.push(rescueLine(c));
     lines.push("");
+  }
+
+  if (low.length > 0) {
+    lines.push(
+      "<details>",
+      `<summary>Low signal band: ${low.length} file${low.length === 1 ? "" : "s"} at scores 3 to ${STRONG_BAND_MIN - 1} (weaker signals, higher noise; expand to view)</summary>`,
+      "",
+    );
+    renderGroups(low, "###");
+    lines.push("</details>", "");
   }
 
   lines.push(...handSection);
