@@ -1,5 +1,5 @@
 {
-  "engineCommit": "daf0297",
+  "engineCommit": "643141f",
   "input": "/home/nate/code/seam-scaffold/validation/scratch-app",
   "candidates": [
     {
@@ -35,16 +35,6 @@
         "shape:value-move"
       ],
       "lines": 24,
-      "viaSafetyNet": false
-    },
-    {
-      "path": "test/routes.test.js",
-      "score": 4,
-      "hits": [
-        "kw:authorize/refund",
-        "bonus:server"
-      ],
-      "lines": 18,
       "viaSafetyNet": false
     }
   ]

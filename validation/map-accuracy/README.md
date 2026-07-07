@@ -257,6 +257,26 @@ seam exists (the redis-py hits show on-map for generic reasons). The
 measurement characterizes this generator at this commit on these four inputs,
 and nothing more.
 
+## Addendum: recalibration executed (2026-07-07)
+
+Items 1 through 4 below were adjudicated approved and executed engine first in
+[fa4ddf1](https://github.com/SeamStressDev/seamstress/commit/fa4ddf1); item 5
+was raced as three selectable options and concluded null, recorded with the
+full race table in
+[643141f](https://github.com/SeamStressDev/seamstress/commit/643141f): options
+a and b broke the 6/6 recall floor and option c eliminated the shape only
+rescue class (85 of 148 judged plausible candidates lost to remove 18 of 24
+noise verdicts). New candidate counts on the four pins under the shipped
+calibration: wc-stripe 222 to 176, redis-py 23 to 16, documenso 595 to 427,
+dub 760 to 649. Recall floor 6/6 held, benchmark detection outcomes unchanged,
+9 of 24 recorded noise verdicts eliminated, and 2 coincidence carried
+plausible candidacies dropped (adjudicated: a hit produced by a defect is not
+detection; see item 7). The scaffold copy was re-ported and both parity
+fixtures regenerated at the new engine commit; the scratch-app fixture lost
+test/routes.test.js, which was session 1's original "unauthorized" false
+positive. Item 6 (score band tiering in the rendered map) was adjudicated
+approved and ships scaffold side.
+
 ## Proposed improvements (for adjudication; engine first per policy)
 
 Recorded, not implemented. Policy: any heuristic change lands in the engine
@@ -281,3 +301,20 @@ regenerated third.
 6. Scaffold side rendering option (no heuristic change, no parity impact):
    tier the map by score band, presenting 6 and up prominently and the low
    band collapsed, so the excellent top is not buried by the flood.
+7. Deliberate authorization-wrapper idiom signal (central auth middleware
+   whose keyword surface is error strings, the safe-action.ts class).
+   Added 2026-07-07 after the precision fixes revealed the class: two files
+   judged plausible in this measurement were candidates only through
+   coincidence signals (the URLs substring, "Unauthorized" error strings),
+   and the approved fixes correctly dropped them, revealing rather than
+   creating the blind spot. Needs its own adjudication and measurement
+   before implementation. Current coverage for the class: the map's Hand
+   additions section, and the seam-change protocol's no-map fallback trigger
+   (code that decides authorization triggers the protocol whether or not it
+   is on the map).
+8. A (c-prime) rebalance variant: candidacy requires two independent signal
+   sources unless the file was rescued by the risk-shape safety net. Recorded
+   2026-07-07 after the rebalance race concluded null (options a and b broke
+   the recall floor; option c eliminated the rescue class wholesale). For
+   future adjudication only if the low band flood persists after score band
+   tiering ships in the map rendering.

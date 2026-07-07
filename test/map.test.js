@@ -88,7 +88,7 @@ describe("map: document shape", () => {
   test("carries the advisory header, provenance, and scan count", () => {
     const md = renderMap([], OPTS);
     assert.match(md, /advisory, never authoritative/);
-    assert.match(md, /SeamStressDev\/seamstress@daf0297/);
+    assert.match(md, /SeamStressDev\/seamstress@643141f/);
     assert.match(md, /Scanned 42 source files\./);
   });
 

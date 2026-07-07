@@ -117,3 +117,13 @@ substring inside "URLs" (117 files in dub alone). Fix class options are
 recorded in the map accuracy document's proposed improvements list for engine
 first adjudication per the dual track policy; no heuristic was modified this
 session.
+
+**Resolution (2026-07-07):** adjudicated and executed engine first. The four
+precision fixes shipped in engine commit `fa4ddf1` (coincidence classes killed,
+non runtime path penalty added; recall floor 6/6 held, benchmark detection
+outcomes unchanged). The low band rebalance was raced as three options and
+concluded null, recorded in engine commit `643141f`: two options broke the
+recall floor and the third eliminated the safety net's rescue class. The
+scaffold copy was re-ported with parity fixtures regenerated, and score band
+tiering in the rendered map was adjudicated approved as the flood's rendering
+side fix; see the map accuracy document's addendum.

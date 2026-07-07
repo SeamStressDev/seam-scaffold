@@ -1,5 +1,5 @@
 {
-  "engineCommit": "daf0297",
+  "engineCommit": "643141f",
   "input": "/home/nate/code/seamstress",
   "candidates": [
     {
@@ -18,7 +18,7 @@
         "shape:money-math",
         "shape:value-move"
       ],
-      "lines": 268,
+      "lines": 298,
       "viaSafetyNet": false
     },
     {
@@ -30,6 +30,7 @@
         "import:auth",
         "server-action",
         "kw:authorize/refund",
+        "penalty:non-runtime",
         "shape:db-write",
         "shape:access-branch",
         "shape:money-math",
@@ -46,6 +47,7 @@
         "import:auth",
         "server-action",
         "kw:authorize/refund",
+        "penalty:non-runtime",
         "shape:db-delete",
         "shape:db-write",
         "shape:access-branch",
