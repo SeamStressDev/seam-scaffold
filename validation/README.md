@@ -101,3 +101,19 @@ contract in one line. A file with no marker regenerates cleanly.
 `init --force`; a markerless file regenerates cleanly) in the commit titled
 `fix: preserve hand curated map additions across regeneration (layer composition
 finding)`, the same commit that records this ruling.
+
+**Heuristic calibration does not transfer from small repo tuning to app router
+era SaaS layouts (2026-07-07).** Found during the map accuracy measurement
+([validation/map-accuracy/](map-accuracy/)): on a 69 file CLI and an 8 file
+fixture the generator produced tidy maps; on two live SaaS applications it
+produced 595 and 760 candidates (29% and 19% of all scanned files). The
+structural cause: modern app router layouts put most files under path segments
+the server path regex bonuses (api, lib, actions, auth, routes), so the +2
+server bonus plus any single 1 or 2 weight vocabulary hit clears the candidate
+threshold of 3. The flood is confined to the 3 to 5 score band (0 of 13
+sampled candidates at 6 and up were noise); four vocabulary coincidence
+classes were quantified, the largest being the RLS pattern matching the
+substring inside "URLs" (117 files in dub alone). Fix class options are
+recorded in the map accuracy document's proposed improvements list for engine
+first adjudication per the dual track policy; no heuristic was modified this
+session.

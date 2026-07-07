@@ -70,6 +70,23 @@ every project on your machine, copy into `~/.claude/skills/` instead.
 Using Cursor: see [adapters/CURSOR-RULES.md](adapters/CURSOR-RULES.md). Using another
 agent that reads a root AGENTS.md: see [adapters/AGENTS.md](adapters/AGENTS.md).
 
+## Measured accuracy
+
+The seam map generator (`seam-scaffold init`) was measured against real public
+code, with the method, the raw tables, and every noise judgment quoted in
+[validation/map-accuracy/](validation/map-accuracy/). What the measurement
+supports at its small n: all 6 ground truth files from the two testable catalog
+incidents landed on the generated maps (recall n=2, and eleven of thirteen
+catalog cases are not testable because the code was never public); the top of
+the map is strong (40 of 40 top scored candidates across two live SaaS repos
+were files a seam reviewer would open, and 0 of 13 sampled candidates at score
+6 and up were noise); the flood lives in the low score band (25% and 43%
+sampled noise at scores 3 to 5, which holds most candidates); and the risk
+shape safety net rescued 64 of 72 real seam adjacent files that keyword
+signals missed. These are characterizations of this generator on four pinned
+inputs, not reliability rates, and the map header says the same thing the
+measurement does: advisory, never authoritative.
+
 ## Honest limits
 
 These protocols are text an agent reads, not code that runs. An agent can follow them
