@@ -59,8 +59,8 @@ An invariant without a test is a promise without a witness.
 **5. Then show the work.** Present the invariant, the break analysis, the test, and the
 diff together. For edits where the invariant involves money movement, authorization
 decisions, or cross tenant access: STOP after presenting and wait for the human before
-applying. For other seam edits: apply, but the presentation still happens and the human
-can revert.
+applying. Naming the edit in the task brings it here; it does not waive the stop. For
+other seam edits: apply, but the presentation still happens and the human can revert.
 
 **6. Never weaken the witness.** If a test fails after your edit, the test is evidence.
 Changing the test to pass is a specification change and requires the human to say so in

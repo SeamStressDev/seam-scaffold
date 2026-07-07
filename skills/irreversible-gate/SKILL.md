@@ -56,7 +56,12 @@ gives the action a landing, not just a launch.
 **5. Then STOP and wait for the human.** The gate never executes the action itself. The
 human runs it, or explicitly tells the agent to run it after reading the answers. Every
 time. There is no streak of good answers that earns an exception, because the hundredth
-push is exactly as irreversible as the first.
+push is exactly as irreversible as the first. A task instruction that names a gated
+action ("commit this and push") brings the action to its gate; it does not skip it. The
+instruction was given before these answers existed, and the human cannot have approved
+answers they had not seen. Present the answers, then wait. Pre approval is different,
+and it is deliberate: the human names the action as pre approved, in this session, in
+so many words (see Override).
 
 ## Override
 

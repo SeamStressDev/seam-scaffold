@@ -89,8 +89,8 @@ An invariant without a test is a promise without a witness.
 **5. Then show the work.** Present the invariant, the break analysis, the test, and the
 diff together. For edits where the invariant involves money movement, authorization
 decisions, or cross tenant access: STOP after presenting and wait for the human before
-applying. For other seam edits: apply, but the presentation still happens and the human
-can revert.
+applying. Naming the edit in the task brings it here; it does not waive the stop. For
+other seam edits: apply, but the presentation still happens and the human can revert.
 
 **6. Never weaken the witness.** If a test fails after your edit, the test is evidence.
 Changing the test to pass is a specification change and requires the human to say so in
@@ -187,7 +187,12 @@ gives the action a landing, not just a launch.
 **5. Then STOP and wait for the human.** The gate never executes the action itself. The
 human runs it, or explicitly tells the agent to run it after reading the answers. Every
 time. There is no streak of good answers that earns an exception, because the hundredth
-push is exactly as irreversible as the first.
+push is exactly as irreversible as the first. A task instruction that names a gated
+action ("commit this and push") brings the action to its gate; it does not skip it. The
+instruction was given before these answers existed, and the human cannot have approved
+answers they had not seen. Present the answers, then wait. Pre approval is different,
+and it is deliberate: the human names the action as pre approved, in this session, in
+so many words (see Override).
 
 ### Override
 
