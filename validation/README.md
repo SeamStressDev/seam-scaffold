@@ -151,11 +151,22 @@ escape is a hostile-repo exfiltration surface, not just a scoping quirk. Wider
 distribution of the CLI (Show HN, newsletters, install pushes) is gated on
 F1, F2, F3, F5, F6, and F7 landing.
 
-**Resolution: PENDING.** Fix sequencing: (1) engine first, the shared heuristic
-findings, path sanitization for F1 plus F5 and F6 and F9, with the engine
-report renderer checked for the same `candidate.path` exposure, recall floor and
-benchmark gate held, then re-port to the scaffold and regenerate parity
-fixtures; (2) scaffold, the render-side and CLI findings, F1 marker anchoring
-and escaping, F2 and F3 planted-map provenance, F4 truncation, F7 gitignore line
-semantics, F8; (3) lift the distribution gate only after F1, F2, F3, F5, F6, F7
-land with tests. No fix ships before its adjudication.
+**Resolution (2026-07-07): all nine fixed, engine first, distribution gate
+lifted.** (1) Engine commit `25fef80`: the shared heuristic findings (F5
+readdirSync robustness, F6 directory-symlink containment, F9 scored-file count)
+and F1-engine (the markdown report renderer interpolated the same `candidate.path`
+raw and was fixed; the HTML renderer was already safe via escapeHtml from the
+verification-gate self-audit). Recall floor 6/6 held, every benchmark entry
+candidate set byte-identical, full engine suite 210, four new regressions
+reversion proven. (2) Scaffold commit `be1d216`: re-ported the heuristic (parity
+fixtures regenerated, only the engine change explains the diff), then the
+render-side and CLI findings, F1 control-character escape, F2 sentinel-bounded
+hand-additions anchoring, F3 planted-map distrust (Option 2: unsigned maps are
+regenerated fresh and warned, never trusted), F4 (falls out of F2), F7 gitignore
+line semantics, F8. Every audit harness flips to refuted; six new regressions
+reversion proven; full scaffold suite 49. (3) The distribution gate is lifted:
+F1, F2, F3, F5, F6, F7 all landed with tests. One residual is recorded as a
+future item in [validation/audit/](audit/): the hand-additions sentinel is a
+fixed public string, not a secret, so an attacker forging it could still seed a
+hand-additions block; closing that needs out-of-repo provenance state, out of
+scope for this fix session.

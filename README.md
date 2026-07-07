@@ -87,6 +87,13 @@ signals missed. These are characterizations of this generator on four pinned
 inputs, not reliability rates, and the map header says the same thing the
 measurement does: advisory, never authoritative.
 
+The generator reads arbitrary, possibly hostile repositories, so its
+untrusted-input surface was audited by a blind cross-model trio and the findings
+fixed; the method, the findings, and the reproduction harnesses are in
+[validation/audit/](validation/audit/). One residual is recorded there as a
+future item: the marker that preserves hand-curated map entries is not a secret,
+so treat a map you did not write yourself as advisory like the rest of it.
+
 ## Honest limits
 
 These protocols are text an agent reads, not code that runs. An agent can follow them
