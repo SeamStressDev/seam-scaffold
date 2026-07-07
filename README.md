@@ -63,8 +63,9 @@ cp -r skills/* /path/to/your/repo/.claude/skills/
 ```
 
 Claude Code discovers each protocol from `.claude/skills/<name>/SKILL.md` and loads it
-when its trigger matches. To install for every project on your machine, copy into
-`~/.claude/skills/` instead.
+when its trigger matches. Skills are discovered at session start, so a session already
+running when you copy them in will not see them until the next session. To install for
+every project on your machine, copy into `~/.claude/skills/` instead.
 
 Using Cursor: see [adapters/CURSOR-RULES.md](adapters/CURSOR-RULES.md). Using another
 agent that reads a root AGENTS.md: see [adapters/AGENTS.md](adapters/AGENTS.md).
