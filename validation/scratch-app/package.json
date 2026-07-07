@@ -1,0 +1,7 @@
+{
+  "name": "storefront-scratch",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}

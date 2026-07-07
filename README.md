@@ -73,10 +73,13 @@ agent that reads a root AGENTS.md: see [adapters/AGENTS.md](adapters/AGENTS.md).
 
 These protocols are text an agent reads, not code that runs. An agent can follow them
 faithfully, follow them mechanically, or drift from them late in a long session, and a
-markdown file cannot prevent the last two. They have not yet been validated against
-live sessions the way the engine is validated against its public benchmark; that
-testing is the next milestone, and until it lands the honest claim is that these encode
-lessons from documented failures, not that they measurably prevent recurrence. The
+markdown file cannot prevent the last two. They have now been probed against live
+headless sessions, one probe per protocol: four governed their sessions cleanly, and
+one (fixture immutability) was followed in substance but violated in order, the test
+edited before the required wait. The transcripts and the scoreboard, misses included,
+are in [validation/](validation/). One run per protocol is a demonstration, not a
+reliability rate, so the claim stays modest: these encode lessons from documented
+failures, not a measurable guarantee of prevention. The
 judgment they demand stays yours: a protocol can make an agent ask whether a tradeoff
 was deliberate, but only you know the answer.
 
