@@ -1,5 +1,6 @@
-// Extracted from SeamStressDev/seamstress src/engine/heuristic.ts at commit 643141f
-// (recalibration: coincidence class fixes and the non-runtime path penalty) and
+// Extracted from SeamStressDev/seamstress src/engine/heuristic.ts at commit 25fef80
+// (trio-audit security fixes: readdirSync robustness, directory-symlink
+// containment, and scored-file count) and
 // ported from TypeScript to JSDoc typed JavaScript. Relicensed MIT by the
 // copyright holder for this scaffold copy; the engine's AGPL copy remains
 // authoritative for the engine. Copyright (c) 2026 SeamStress contributors.
@@ -26,7 +27,7 @@
  *    calls) rescues such files even with a zero keyword score.
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join, relative, basename, extname } from "node:path";
 
 /** Source extensions we scan, broad enough for non JS stacks. */
@@ -143,6 +144,8 @@ function isNonRuntimeFile(path) {
 
 /** Default score a file must reach to become a candidate. */
 export const DEFAULT_CANDIDATE_THRESHOLD = 3;
+/** Default cap on files scored, as a runaway guard on huge repos. */
+export const DEFAULT_MAX_FILES = 5000;
 /** Risk shapes a non UI file must hit to be rescued by the safety net alone. */
 export const SAFETY_NET_MIN_SHAPES = 2;
 
@@ -223,7 +226,13 @@ export function scoreSource(path, content) {
  */
 function listSourceFiles(root, dir, acc, cap) {
   if (acc.length >= cap) return;
-  for (const entry of readdirSync(dir)) {
+  let entries;
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return; // unreadable directory (EACCES, ENAMETOOLONG, ...): skip, never abort
+  }
+  for (const entry of entries) {
     if (acc.length >= cap) return;
     const full = join(dir, entry);
     let st;
@@ -234,6 +243,16 @@ function listSourceFiles(root, dir, acc, cap) {
     }
     if (st.isDirectory()) {
       if (SKIP_DIRS.has(entry) || entry.startsWith(".")) continue;
+      // Do not follow directory symlinks: they can resolve outside the scan
+      // root (reading files the caller never pointed at) or form cycles.
+      // statSync above follows the link; lstatSync sees the link itself.
+      let lst;
+      try {
+        lst = lstatSync(full);
+      } catch {
+        continue;
+      }
+      if (lst.isSymbolicLink()) continue;
       listSourceFiles(root, full, acc, cap);
     } else if (SOURCE_EXTENSIONS.has(extname(entry)) && !entry.endsWith(".d.ts")) {
       acc.push(full);
@@ -250,7 +269,7 @@ function listSourceFiles(root, dir, acc, cap) {
  */
 export function scanRepo(repoPath, options = {}) {
   const threshold = options.threshold ?? DEFAULT_CANDIDATE_THRESHOLD;
-  const cap = options.maxFiles ?? 5000;
+  const cap = options.maxFiles ?? DEFAULT_MAX_FILES;
 
   const files = [];
   listSourceFiles(repoPath, repoPath, files, cap);
@@ -282,11 +301,15 @@ export function readCandidateSource(repoPath, candidate) {
 
 /**
  * Count scannable source files and tally them by extension. Drives the map
- * headline ("scanned N files"). Uses the same enumeration as {@link scanRepo}.
+ * headline. `scanned` is how many files scanRepo would actually score under
+ * `maxFiles`; `total` is how many exist. They differ only past the cap, and the
+ * headline reports `scanned` so it never claims to have scored files the cap
+ * skipped.
  * @param {string} repoPath
- * @returns {{ total: number, byExt: Record<string, number> }}
+ * @param {number} [maxFiles]
+ * @returns {{ total: number, byExt: Record<string, number>, scanned: number }}
  */
-export function sourceFileStats(repoPath) {
+export function sourceFileStats(repoPath, maxFiles = DEFAULT_MAX_FILES) {
   const files = [];
   listSourceFiles(repoPath, repoPath, files, 100_000);
   const byExt = {};
@@ -294,7 +317,7 @@ export function sourceFileStats(repoPath) {
     const ext = extname(f);
     byExt[ext] = (byExt[ext] ?? 0) + 1;
   }
-  return { total: files.length, byExt };
+  return { total: files.length, byExt, scanned: Math.min(files.length, maxFiles) };
 }
 
 /**

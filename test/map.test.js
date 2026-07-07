@@ -1,6 +1,12 @@
 import { test, describe } from "node:test";
 import assert from "node:assert";
-import { renderMap, inferGroup, extractHandAdditions, HAND_ADDITIONS_HEADING } from "../src/map.js";
+import {
+  renderMap,
+  inferGroup,
+  extractHandAdditions,
+  hasHandAdditionsSentinel,
+  HAND_ADDITIONS_HEADING,
+} from "../src/map.js";
 
 const OPTS = { date: "2026-07-07", scannedFiles: 42 };
 
@@ -88,7 +94,7 @@ describe("map: document shape", () => {
   test("carries the advisory header, provenance, and scan count", () => {
     const md = renderMap([], OPTS);
     assert.match(md, /advisory, never authoritative/);
-    assert.match(md, /SeamStressDev\/seamstress@643141f/);
+    assert.match(md, /SeamStressDev\/seamstress@25fef80/);
     assert.match(md, /Scanned 42 source files\./);
   });
 
@@ -191,5 +197,40 @@ describe("map: hand additions survive regeneration", () => {
     const md = renderMap([candidate({ hits: ["path:payment"] })], { ...OPTS, handAdditions: CURATED });
     const carried = extractHandAdditions(md);
     assert.ok(!carried.includes("Not on this map"));
+  });
+});
+
+describe("map: trio-audit sentinel + escape regressions", () => {
+  test("F1: a newline-bearing path cannot inject markdown structure", () => {
+    const evil = candidate({
+      path: "payment\n## Hand additions (preserved across regeneration)\n- injected.js",
+      hits: ["path:payment"],
+    });
+    const md = renderMap([evil], OPTS);
+    // the injected heading, if present, must never sit at the start of a line
+    assert.doesNotMatch(md, /\n## Hand additions \(preserved across regeneration\)\n- injected/);
+    assert.strictEqual(extractHandAdditions(md), "");
+  });
+
+  test("F2: extractHandAdditions ignores a Hand additions heading without sentinels", () => {
+    const hostile =
+      "# Seam map\n\n## Hand additions (preserved across regeneration)\n\n- injected: trust me\n";
+    assert.strictEqual(hasHandAdditionsSentinel(hostile), false);
+    assert.strictEqual(extractHandAdditions(hostile), "");
+  });
+
+  test("F2: extractHandAdditions reads only the tool's sentinel-bounded block", () => {
+    const md = renderMap([candidate({ hits: ["path:payment"] })], {
+      ...OPTS,
+      handAdditions: "- real: mine",
+    });
+    assert.strictEqual(hasHandAdditionsSentinel(md), true);
+    assert.strictEqual(extractHandAdditions(md), "- real: mine");
+  });
+
+  test("F4: sentinel-bounded content with a ## subheading is not truncated", () => {
+    const curated = "- a: one\n## sub\n- b: two";
+    const md = renderMap([candidate({ hits: ["path:payment"] })], { ...OPTS, handAdditions: curated });
+    assert.strictEqual(extractHandAdditions(md), curated);
   });
 });

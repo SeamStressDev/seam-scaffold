@@ -1,5 +1,5 @@
 {
-  "engineCommit": "643141f",
+  "engineCommit": "25fef80",
   "input": "/home/nate/code/seamstress",
   "candidates": [
     {
@@ -18,7 +18,7 @@
         "shape:money-math",
         "shape:value-move"
       ],
-      "lines": 298,
+      "lines": 321,
       "viaSafetyNet": false
     },
     {

@@ -28,7 +28,21 @@ const SIGNAL_PHRASES = {
   "shape:value-move": "a value moving call",
   "bonus:server": "server side location",
   "penalty:ui": "a user interface surface (penalized)",
+  "penalty:non-runtime": "a non-runtime file (penalized)",
 };
+
+/** Score labels that describe location or penalty, never rendered as prose reasons. */
+const NON_REASON_LABELS = new Set(["bonus:server", "penalty:ui", "penalty:non-runtime"]);
+
+/**
+ * Neutralize control characters in a repo-controlled path before rendering it
+ * into the map. A repository controls its own file paths, and a path may
+ * legally contain newlines and other control bytes; without this a crafted
+ * filename could inject markdown structure into a map an agent reads as trusted.
+ */
+function mdSafePath(path) {
+  return path.replace(/[\u0000-\u001f]/g, " ");
+}
 
 /** Signal families for grouping. Grouping is signal derived, not judgment. */
 const FAMILY = {
@@ -97,17 +111,17 @@ function joinPhrases(labels, joiner) {
 
 /** Reason line for a normal candidate: plain language, raw tags in parens. */
 function reasonLine(candidate) {
-  const labels = candidate.hits.filter((h) => h !== "bonus:server" && h !== "penalty:ui");
+  const labels = candidate.hits.filter((h) => !NON_REASON_LABELS.has(h));
   const words = joinPhrases(labels, "and");
   const tags = [...candidate.hits, `score ${candidate.score}`].join(", ");
-  return `- ${candidate.path}: ${words} (${tags})`;
+  return `- ${mdSafePath(candidate.path)}: ${words} (${tags})`;
 }
 
 /** Reason line for a safety net rescue: the rescue reasoning spelled out. */
 function rescueLine(candidate) {
   const shapeLabels = candidate.hits.filter((h) => h.startsWith("shape:"));
   const keywordLabels = candidate.hits.filter(
-    (h) => !h.startsWith("shape:") && h !== "bonus:server" && h !== "penalty:ui",
+    (h) => !h.startsWith("shape:") && !NON_REASON_LABELS.has(h),
   );
   const lead =
     keywordLabels.length === 0
@@ -115,30 +129,57 @@ function rescueLine(candidate) {
       : `keyword signals alone fell short (${joinPhrases(keywordLabels, "and")})`;
   const shapes = shapeLabels.map(phrase).join(" plus ");
   const tags = [...candidate.hits, `score ${candidate.score}`].join(", ");
-  return `- ${candidate.path}: ${lead}, rescued by risk shape: ${shapes} (${tags})`;
+  return `- ${mdSafePath(candidate.path)}: ${lead}, rescued by risk shape: ${shapes} (${tags})`;
 }
 
-/** The marker heading for the hand curated section preserved across regeneration. */
+/** The visible heading for the hand curated section preserved across regeneration. */
 export const HAND_ADDITIONS_HEADING = "## Hand additions (preserved across regeneration)";
+
+/**
+ * Sentinels the renderer emits around the hand additions section. They are HTML
+ * comments (invisible in rendered markdown) and bound the section unambiguously:
+ * the extractor requires BOTH and takes only what lies between them. A `## Hand
+ * additions` heading a hostile repo injects into a filename, or ships in a
+ * planted map, is not sentinel-bounded and is therefore ignored. This closes the
+ * first-match hijack, the slice-to-end-of-file over-read, and the truncation of
+ * user notes that contain their own `##` subheading, in one move.
+ */
+const HAND_ADDITIONS_BEGIN = "<!-- seam-scaffold:hand-additions:begin -->";
+const HAND_ADDITIONS_END = "<!-- seam-scaffold:hand-additions:end -->";
 
 /** Placeholder shown when the hand additions section is empty. */
 const HAND_ADDITIONS_HINT =
   "(none yet; entries you add under this heading survive regeneration verbatim)";
 
 /**
- * Extract the hand additions section content from an existing map, so a
- * regeneration can carry it forward verbatim. Returns the section body
- * (without the heading) or an empty string when the marker is absent or the
- * section holds only the placeholder hint.
+ * Does this map carry the tool's hand additions sentinels? False for a planted,
+ * foreign, or pre-sentinel map, which the CLI treats as untrusted.
+ * @param {string} markdown
+ * @returns {boolean}
+ */
+export function hasHandAdditionsSentinel(markdown) {
+  const begin = markdown.indexOf(HAND_ADDITIONS_BEGIN);
+  if (begin === -1) return false;
+  return markdown.indexOf(HAND_ADDITIONS_END, begin + HAND_ADDITIONS_BEGIN.length) !== -1;
+}
+
+/**
+ * Extract the hand additions body from between the sentinels of a map this tool
+ * wrote, so a regeneration can carry it forward verbatim. Returns "" when the
+ * sentinels are absent (untrusted map) or the section holds only the hint.
  * @param {string} markdown
  * @returns {string}
  */
 export function extractHandAdditions(markdown) {
-  const start = markdown.indexOf(HAND_ADDITIONS_HEADING);
-  if (start === -1) return "";
-  const afterHeading = start + HAND_ADDITIONS_HEADING.length;
-  const nextSection = markdown.indexOf("\n## ", afterHeading);
-  const body = markdown.slice(afterHeading, nextSection === -1 ? undefined : nextSection).trim();
+  const begin = markdown.indexOf(HAND_ADDITIONS_BEGIN);
+  if (begin === -1) return "";
+  const contentStart = begin + HAND_ADDITIONS_BEGIN.length;
+  const end = markdown.indexOf(HAND_ADDITIONS_END, contentStart);
+  if (end === -1) return "";
+  let body = markdown.slice(contentStart, end);
+  const headingAt = body.indexOf(HAND_ADDITIONS_HEADING);
+  if (headingAt !== -1) body = body.slice(headingAt + HAND_ADDITIONS_HEADING.length);
+  body = body.trim();
   return body === HAND_ADDITIONS_HINT ? "" : body;
 }
 
@@ -154,7 +195,7 @@ export function renderMap(candidates, options) {
     "# Seam map",
     "",
     `Generated by seam-scaffold on ${options.date} (heuristic extracted from`,
-    "SeamStressDev/seamstress@643141f). This map is advisory, never authoritative:",
+    "SeamStressDev/seamstress@25fef80). This map is advisory, never authoritative:",
     "it marks where the heuristic sees seam signals. It cannot see design intent,",
     "and a file it missed can still be a seam. Groupings are heuristic signal",
     "families, not judgment. The Hand additions section survives regeneration",
@@ -168,9 +209,12 @@ export function renderMap(candidates, options) {
 
   const handAdditions = (options.handAdditions ?? "").trim();
   const handSection = [
+    HAND_ADDITIONS_BEGIN,
     HAND_ADDITIONS_HEADING,
     "",
     handAdditions === "" ? HAND_ADDITIONS_HINT : handAdditions,
+    "",
+    HAND_ADDITIONS_END,
     "",
   ];
 
