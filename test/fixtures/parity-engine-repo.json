@@ -1,0 +1,105 @@
+{
+  "engineCommit": "daf0297",
+  "input": "/home/nate/code/seamstress",
+  "candidates": [
+    {
+      "path": "src/engine/heuristic.ts",
+      "score": 16,
+      "hits": [
+        "import:payment",
+        "import:auth",
+        "server-action",
+        "kw:authorize/refund",
+        "kw:credential",
+        "kw:sql-destruct",
+        "shape:db-delete",
+        "shape:db-write",
+        "shape:access-branch",
+        "shape:money-math",
+        "shape:value-move"
+      ],
+      "lines": 268,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "src/engine/map.test.ts",
+      "score": 15,
+      "hits": [
+        "import:payment",
+        "api:payment",
+        "import:auth",
+        "server-action",
+        "kw:authorize/refund",
+        "shape:db-write",
+        "shape:access-branch",
+        "shape:money-math",
+        "shape:value-move"
+      ],
+      "lines": 408,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "src/engine/detector.test.ts",
+      "score": 13,
+      "hits": [
+        "api:payment",
+        "import:auth",
+        "server-action",
+        "kw:authorize/refund",
+        "shape:db-delete",
+        "shape:db-write",
+        "shape:access-branch",
+        "shape:money-math",
+        "shape:value-move"
+      ],
+      "lines": 336,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "benchmark/entries/002-conjunctive-suppression-unsafe-default/fixture/payment.ts",
+      "score": 3,
+      "hits": [
+        "path:payment"
+      ],
+      "lines": 16,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "benchmark/entries/003-idempotency-coverage-asymmetry/fixture/charges.ts",
+      "score": 3,
+      "hits": [
+        "path:payment"
+      ],
+      "lines": 13,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "benchmark/entries/003-idempotency-coverage-asymmetry/fixture/checkout.ts",
+      "score": 3,
+      "hits": [
+        "path:payment",
+        "shape:value-move"
+      ],
+      "lines": 16,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "benchmark/entries/003-idempotency-coverage-asymmetry/fixture/paymentIntents.ts",
+      "score": 3,
+      "hits": [
+        "path:payment"
+      ],
+      "lines": 12,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "benchmark/entries/004-missing-ownership-check-idor/fixture/invoices.ts",
+      "score": 3,
+      "hits": [
+        "path:payment"
+      ],
+      "lines": 11,
+      "viaSafetyNet": false
+    }
+  ]
+}

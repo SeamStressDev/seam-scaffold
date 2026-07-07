@@ -1,0 +1,17 @@
+{
+  "name": "seam-scaffold",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Training wheels for AI assisted coding: seam aware behavior protocols plus a local seam map generator.",
+  "type": "module",
+  "bin": {
+    "seam-scaffold": "src/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

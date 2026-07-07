@@ -1,0 +1,106 @@
+import { test, describe, beforeEach, afterEach } from "node:test";
+import assert from "node:assert";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const CLI = join(here, "..", "src", "cli.js");
+
+let dir;
+beforeEach(() => {
+  dir = mkdtempSync(join(tmpdir(), "seam-scaffold-test-"));
+  mkdirSync(join(dir, "src"));
+  writeFileSync(join(dir, "src", "checkout.js"), "import Stripe from 'stripe'; new Stripe(key);\n");
+  writeFileSync(join(dir, ".gitignore"), "node_modules/\n");
+});
+afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+function run(args) {
+  try {
+    const stdout = execFileSync("node", [CLI, ...args], { encoding: "utf8" });
+    return { code: 0, stdout, stderr: "" };
+  } catch (err) {
+    return { code: err.status, stdout: err.stdout ?? "", stderr: err.stderr ?? "" };
+  }
+}
+
+describe("cli: init", () => {
+  test("writes the map and tends .gitignore", () => {
+    const r = run(["init", dir]);
+    assert.strictEqual(r.code, 0);
+    const mapPath = join(dir, ".seamstress", "seam-map.md");
+    assert.ok(existsSync(mapPath));
+    assert.match(readFileSync(mapPath, "utf8"), /# Seam map/);
+    assert.match(readFileSync(join(dir, ".gitignore"), "utf8"), /\.seamstress\/session-notes\.md/);
+    assert.match(r.stdout, /appended \.seamstress\/session-notes\.md to \.gitignore/);
+  });
+
+  test("refuses to overwrite an existing map without --force", () => {
+    run(["init", dir]);
+    const before = readFileSync(join(dir, ".seamstress", "seam-map.md"), "utf8");
+    const r = run(["init", dir]);
+    assert.strictEqual(r.code, 1);
+    assert.match(r.stderr, /already exists/);
+    assert.strictEqual(readFileSync(join(dir, ".seamstress", "seam-map.md"), "utf8"), before);
+  });
+
+  test("--force overwrites", () => {
+    run(["init", dir]);
+    const r = run(["init", dir, "--force"]);
+    assert.strictEqual(r.code, 0);
+  });
+
+  test("a second init does not duplicate the gitignore line", () => {
+    run(["init", dir]);
+    run(["init", dir, "--force"]);
+    const content = readFileSync(join(dir, ".gitignore"), "utf8");
+    const occurrences = content.split(".seamstress/session-notes.md").length - 1;
+    assert.strictEqual(occurrences, 1);
+  });
+
+  test("states it when no .gitignore exists and touches nothing", () => {
+    rmSync(join(dir, ".gitignore"));
+    const r = run(["init", dir]);
+    assert.strictEqual(r.code, 0);
+    assert.match(r.stdout, /no \.gitignore found/);
+    assert.ok(!existsSync(join(dir, ".gitignore")));
+  });
+});
+
+describe("cli: map", () => {
+  test("overwrites without ceremony", () => {
+    run(["init", dir]);
+    const r = run(["map", dir]);
+    assert.strictEqual(r.code, 0);
+    assert.match(r.stdout, /wrote/);
+  });
+
+  test("an empty repo gets the honest empty map", () => {
+    const empty = mkdtempSync(join(tmpdir(), "seam-scaffold-empty-"));
+    try {
+      const r = run(["map", empty]);
+      assert.strictEqual(r.code, 0);
+      const md = readFileSync(join(empty, ".seamstress", "seam-map.md"), "utf8");
+      assert.match(md, /No files met the seam criteria\./);
+    } finally {
+      rmSync(empty, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("cli: arguments", () => {
+  test("unknown command exits 1 with usage", () => {
+    const r = run(["frobnicate"]);
+    assert.strictEqual(r.code, 1);
+    assert.match(r.stderr, /Usage:/);
+  });
+
+  test("missing path exits 1", () => {
+    const r = run(["map", join(dir, "does-not-exist")]);
+    assert.strictEqual(r.code, 1);
+    assert.match(r.stderr, /path not found/);
+  });
+});

@@ -1,0 +1,51 @@
+{
+  "engineCommit": "daf0297",
+  "input": "/home/nate/code/seam-scaffold/validation/scratch-app",
+  "candidates": [
+    {
+      "path": "src/billing/charge.js",
+      "score": 7,
+      "hits": [
+        "path:payment",
+        "path:billing",
+        "shape:money-math",
+        "shape:value-move"
+      ],
+      "lines": 13,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "src/auth.js",
+      "score": 6,
+      "hits": [
+        "path:auth",
+        "kw:authorize/refund",
+        "bonus:server",
+        "shape:access-branch"
+      ],
+      "lines": 23,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "src/billing/checkout.js",
+      "score": 5,
+      "hits": [
+        "path:payment",
+        "path:billing",
+        "shape:value-move"
+      ],
+      "lines": 24,
+      "viaSafetyNet": false
+    },
+    {
+      "path": "test/routes.test.js",
+      "score": 4,
+      "hits": [
+        "kw:authorize/refund",
+        "bonus:server"
+      ],
+      "lines": 18,
+      "viaSafetyNet": false
+    }
+  ]
+}
