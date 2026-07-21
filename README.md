@@ -117,6 +117,10 @@ was deliberate, but only you know the answer.
   incidents that the protocols' required steps trace to.
 - [Why seams](docs/why-seams.md): the short version of what a seam is and why AI
   assisted code concentrates bugs there.
+- [Field notes from a production dogfood](docs/field-notes-production-dogfood.md):
+  the protocols self-applied on a real production project — a per-protocol
+  invocation tally from the host's findings ledger, five anecdotes, and what the
+  evidence does not show.
 - [The verification gate self audit](https://dev.to/seamstress/i-pointed-my-code-reviewer-at-its-own-verifier-it-found-two-ways-to-lie-57bc):
   the write up of the engine auditing its own proof discipline before launch.
 
